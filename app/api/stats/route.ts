@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
         return new NextResponse(svg, {
             headers: {
                 'Content-Type': 'image/svg+xml',
-                'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+                'Cache-Control': 'public, max-age=1800, s-maxage=1800, must-revalidate',
+                'ETag': `W/"${Buffer.from(svg).length}-${Date.now()}"`,
             },
         });
     } catch (error: any) {

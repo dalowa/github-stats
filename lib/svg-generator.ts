@@ -34,26 +34,117 @@ export function generateSvg(stats: GitHubStats): string {
     const legendStartY = barY + barHeight + 25;
     const legendRowHeight = 24;
 
-    // Calculate total height
-    const rows = Math.ceil(languages.length / 3); // 3 columns for legend
-    const height = legendStartY + (rows * legendRowHeight) + padding;
+    // Calculate language legend height
+    const langRows = Math.ceil(languages.length / 3); // 3 columns for legend
+    const langLegendHeight = langRows * legendRowHeight;
 
-    // Cyberpunk CSS
+    // Topics section
+    const topTopics = stats.topics.slice(0, 15);
+    const topicsY = legendStartY + langLegendHeight + 30;
+    // Estimate topic rows (we'll compute actual positions later)
+    const topicTagHeight = 24;
+    const topicTagPadding = 8;
+    const topicRowHeight = topicTagHeight + 6;
+
+    // Licenses section
+    const sortedLicenses = Object.entries(stats.licenses)
+        .sort(([, a], [, b]) => b - a);
+    const totalLicensedRepos = sortedLicenses.reduce((sum, [, count]) => sum + count, 0);
+
+    // Pre-calculate topic layout to get actual height
+    const topicPositions: { x: number; y: number; w: number; text: string }[] = [];
+    let tX = 0;
+    let tY = 0;
+    const maxRowWidth = width - 2 * padding;
+    for (const topic of topTopics) {
+        const tagW = topic.length * 7 + topicTagPadding * 2 + 4;
+        if (tX + tagW > maxRowWidth && tX > 0) {
+            tX = 0;
+            tY += topicRowHeight;
+        }
+        topicPositions.push({ x: tX, y: tY, w: tagW, text: topic });
+        tX += tagW + 6;
+    }
+    const topicsHeight = topTopics.length > 0 ? tY + topicRowHeight + 20 : 0;
+
+    // License layout
+    const licensesY = topicsY + topicsHeight + (topTopics.length > 0 ? 10 : 0);
+    const licenseBarHeight = 14;
+    const licenseLegendRowHeight = 22;
+    const licenseRows = Math.ceil(sortedLicenses.length / 3);
+    const licensesHeight = sortedLicenses.length > 0
+        ? licenseBarHeight + 25 + (licenseRows * licenseLegendRowHeight) + 20
+        : 0;
+
+    // Streak section
+    const streakY = licensesY + licensesHeight + (licensesHeight > 0 ? 10 : 0);
+    const streakBoxHeight = 80;
+    const streakHeight = streakBoxHeight + 30;
+
+    // Code volume section
+    const codeVolumeY = streakY + streakHeight + 10;
+    const hasCodeVolume = stats.totalAdditions > 0 || stats.totalDeletions > 0;
+    const codeVolumeHeight = hasCodeVolume ? 70 : 0;
+
+    // Traffic section
+    const hasTraffic = stats.totalViews > 0 || stats.totalClones > 0 || stats.referrers.length > 0;
+    const trafficY = codeVolumeY + codeVolumeHeight + (hasCodeVolume ? 10 : 0);
+    const trafficStatHeight = 70;
+    const referrerRowHeight = 24;
+    const referrerCount = stats.referrers.length;
+    const trafficHeight = hasTraffic
+        ? trafficStatHeight + 20 + (referrerCount > 0 ? 30 + referrerCount * referrerRowHeight : 0) + 20
+        : 0;
+
+    // Calculate total height
+    const height = trafficY + trafficHeight + padding;
+
+    // Helper: format large numbers
+    const formatNum = (n: number): string => {
+        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+        if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+        return n.toLocaleString();
+    };
+
+    // Aura Theme CSS
     const css = `
-    .header-name { font: 700 24px 'Segoe UI', sans-serif; fill: #00f0ff; }
-    .header-user { font: 400 16px 'Segoe UI', sans-serif; fill: #ff003c; letter-spacing: 1px; }
-    .bio { font: 400 13px 'Segoe UI', sans-serif; fill: #a1a1aa; }
-    .info-text { font: 400 12px 'Segoe UI', sans-serif; fill: #94a3b8; }
+    .header-name { font: 700 24px 'Segoe UI', sans-serif; fill: #a277ff; }
+    .header-user { font: 400 16px 'Segoe UI', sans-serif; fill: #61ffca; letter-spacing: 1px; }
+    .bio { font: 400 13px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .info-text { font: 400 12px 'Segoe UI', sans-serif; fill: #6d6d6d; }
     
-    .stat-value { font: 700 20px 'Segoe UI', sans-serif; fill: #ffffff; }
-    .stat-label { font: 600 11px 'Segoe UI', sans-serif; fill: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font: 700 20px 'Segoe UI', sans-serif; fill: #edecee; }
+    .stat-label { font: 600 11px 'Segoe UI', sans-serif; fill: #6d6d6d; text-transform: uppercase; letter-spacing: 1px; }
     
-    .lang-name { font: 600 11px 'Segoe UI', sans-serif; fill: #e2e8f0; }
-    .lang-pct { font: 400 11px 'Segoe UI', sans-serif; fill: #94a3b8; }
+    .lang-name { font: 600 11px 'Segoe UI', sans-serif; fill: #edecee; }
+    .lang-pct { font: 400 11px 'Segoe UI', sans-serif; fill: #6d6d6d; }
     
-    .bg-rect { fill: url(#bg-grad); stroke: #30363d; stroke-width: 1; }
-    .stat-box { fill: rgba(15, 23, 42, 0.6); stroke: #334155; stroke-width: 1; }
-    .icon { fill: #00f0ff; opacity: 0.8; }
+    .bg-rect { fill: url(#bg-grad); stroke: #3d375e; stroke-width: 1; }
+    .stat-box { fill: rgba(61, 55, 94, 0.5); stroke: #3d375e; stroke-width: 1; }
+    .icon { fill: #a277ff; opacity: 0.9; }
+    .section-title { font: 600 11px 'Segoe UI', sans-serif; fill: #6d6d6d; text-transform: uppercase; letter-spacing: 1px; }
+    .topic-tag { fill: rgba(162, 119, 255, 0.1); stroke: #a277ff; stroke-width: 0.5; }
+    .topic-text { font: 500 11px 'Segoe UI', sans-serif; fill: #a277ff; }
+    .license-tag { fill: rgba(97, 255, 202, 0.1); stroke: #61ffca; stroke-width: 0.5; }
+    .license-text { font: 500 11px 'Segoe UI', sans-serif; fill: #61ffca; }
+    .license-count { font: 400 10px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .traffic-box { fill: rgba(61, 55, 94, 0.5); stroke: #3d375e; stroke-width: 1; }
+    .traffic-value { font: 700 18px 'Segoe UI', sans-serif; fill: #edecee; }
+    .traffic-label { font: 600 10px 'Segoe UI', sans-serif; fill: #6d6d6d; text-transform: uppercase; letter-spacing: 1px; }
+    .traffic-sub { font: 400 10px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .referrer-name { font: 600 12px 'Segoe UI', sans-serif; fill: #edecee; }
+    .referrer-count { font: 400 12px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .referrer-bar-bg { fill: rgba(61, 55, 94, 0.5); }
+    .referrer-bar { fill: #a277ff; opacity: 0.6; }
+    .streak-value { font: 700 28px 'Segoe UI', sans-serif; fill: #edecee; }
+    .streak-label { font: 600 10px 'Segoe UI', sans-serif; fill: #6d6d6d; text-transform: uppercase; letter-spacing: 1px; }
+    .streak-sub { font: 400 11px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .streak-box { fill: rgba(61, 55, 94, 0.5); stroke: #3d375e; stroke-width: 1; }
+    .code-add { font: 700 16px 'Segoe UI', sans-serif; fill: #61ffca; }
+    .code-del { font: 700 16px 'Segoe UI', sans-serif; fill: #ff6767; }
+    .code-label { font: 400 11px 'Segoe UI', sans-serif; fill: #6d6d6d; }
+    .code-bar-add { fill: #61ffca; }
+    .code-bar-del { fill: #ff6767; }
   `;
 
     // Icons
@@ -97,38 +188,32 @@ export function generateSvg(stats: GitHubStats): string {
     const bio = escapeXml(stats.bio || "No bio available");
     const location = escapeXml(stats.location);
     const company = escapeXml(stats.company);
-    const avatarUrl = escapeXml(stats.avatarUrl);
 
     // Header Section
     let svgContent = `
   <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#1e1b4b;stop-opacity:1" />
+        <stop offset="0%" style="stop-color:#15141b;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#1c1b29;stop-opacity:1" />
       </linearGradient>
     </defs>
     <style><![CDATA[${css}]]></style>
     
     <!-- Background and Border -->
     <rect x="0.5" y="0.5" rx="10" width="${width - 1}" height="${height - 1}" class="bg-rect" />
-    <path d="M 0.5 50 L 0.5 15 Q 0.5 0.5 15 0.5 L 50 0.5" fill="none" stroke="#00f0ff" stroke-width="2" />
-    <path d="M ${width - 0.5} ${height - 50} L ${width - 0.5} ${height - 15} Q ${width - 0.5} ${height - 0.5} ${width - 15} ${height - 0.5} L ${width - 50} ${height - 0.5}" fill="none" stroke="#ff003c" stroke-width="2" />
+    <path d="M 0.5 50 L 0.5 15 Q 0.5 0.5 15 0.5 L 50 0.5" fill="none" stroke="#a277ff" stroke-width="2" />
+    <path d="M ${width - 0.5} ${height - 50} L ${width - 0.5} ${height - 15} Q ${width - 0.5} ${height - 0.5} ${width - 15} ${height - 0.5} L ${width - 50} ${height - 0.5}" fill="none" stroke="#61ffca" stroke-width="2" />
 
     <!-- Header Section -->
     <g transform="translate(${padding}, ${padding + 10})">
-        <!-- Avatar -->
-        <image href="${avatarUrl}" x="0" y="0" height="80" width="80" rx="40" clip-path="circle(40px at center)" />
-        <circle cx="40" cy="40" r="41" fill="none" stroke="#334155" stroke-width="2" />
-        
-        <g transform="translate(100, 10)">
+        <g transform="translate(0, 10)">
             <text x="0" y="0" class="header-name" dominant-baseline="hanging">${headerName}</text>
             <text x="0" y="30" class="header-user" dominant-baseline="hanging">@${headerUser}</text>
             
             <text x="0" y="60" class="bio" dominant-baseline="hanging">${bio}</text>
             
             <g transform="translate(0, 85)">
-               <!-- Info Line 1 -->
                ${location ? `<text x="0" y="0" class="info-text">${location}</text>` : ''}
                ${company ? `<text x="${location ? 120 : 0}" y="0" class="info-text">${company}</text>` : ''}
                <text x="${(location ? 120 : 0) + (company ? 120 : 0)}" y="0" class="info-text">Joined ${new Date(stats.createdAt).toLocaleDateString()}</text>
@@ -164,7 +249,7 @@ export function generateSvg(stats: GitHubStats): string {
     <g transform="translate(${padding}, ${barY})">
         <text x="0" y="-10" class="stat-label">Top Languages</text>
         <mask id="bar-mask"><rect x="0" y="0" width="${width - 2 * padding}" height="${barHeight}" rx="2" fill="white" /></mask>
-        <rect x="0" y="0" width="${width - 2 * padding}" height="${barHeight}" rx="2" fill="#2d2d35" />
+        <rect x="0" y="0" width="${width - 2 * padding}" height="${barHeight}" rx="2" fill="#29263d" />
         `;
 
     let currentX = 0;
@@ -181,7 +266,7 @@ export function generateSvg(stats: GitHubStats): string {
     languages.forEach((lang) => {
         const barWidth = (lang.percentage / 100) * (width - 2 * padding);
         currentX += barWidth;
-        svgContent += `<rect x="${currentX - 1}" y="0" width="1" height="${barHeight}" fill="#0f172a" opacity="0.5" />`;
+        svgContent += `<rect x="${currentX - 1}" y="0" width="1" height="${barHeight}" fill="#15141b" opacity="0.5" />`;
     });
 
     svgContent += `</g>`;
@@ -206,6 +291,177 @@ export function generateSvg(stats: GitHubStats): string {
       `;
     });
     svgContent += `</g>`;
+
+    // Topics section
+    if (topTopics.length > 0) {
+        svgContent += `<g transform="translate(${padding}, ${topicsY})">`;
+        svgContent += `<text x="0" y="-10" class="section-title">Topics</text>`;
+        for (const tp of topicPositions) {
+            svgContent += `
+          <g transform="translate(${tp.x}, ${tp.y})">
+            <rect width="${tp.w}" height="${topicTagHeight}" rx="12" class="topic-tag" />
+            <text x="${tp.w / 2}" y="${topicTagHeight / 2 + 1}" text-anchor="middle" dominant-baseline="middle" class="topic-text">${escapeXml(tp.text)}</text>
+          </g>`;
+        }
+        svgContent += `</g>`;
+    }
+
+    // Licenses section
+    if (sortedLicenses.length > 0) {
+        svgContent += `<g transform="translate(${padding}, ${licensesY})">`;
+        svgContent += `<text x="0" y="-10" class="section-title">Licenses</text>`;
+
+        // License bar
+        svgContent += `<mask id="license-mask"><rect x="0" y="0" width="${width - 2 * padding}" height="${licenseBarHeight}" rx="2" fill="white" /></mask>`;
+        svgContent += `<rect x="0" y="0" width="${width - 2 * padding}" height="${licenseBarHeight}" rx="2" fill="#29263d" />`;
+
+        const licenseColors: { [key: string]: string } = {
+            'MIT': '#a277ff',
+            'Apache-2.0': '#ff6767',
+            'GPL-3.0': '#f694ff',
+            'GPL-2.0': '#f694ff',
+            'BSD-2-Clause': '#ffca85',
+            'BSD-3-Clause': '#ffca85',
+            'ISC': '#61ffca',
+            'MPL-2.0': '#82e2ff',
+            'LGPL-3.0': '#f694ff',
+            'AGPL-3.0': '#f694ff',
+            'Unlicense': '#6d6d6d',
+        };
+
+        let lx = 0;
+        for (const [license, count] of sortedLicenses) {
+            const barW = (count / totalLicensedRepos) * (width - 2 * padding);
+            const color = licenseColors[license] || '#6d6d6d';
+            svgContent += `<rect x="${lx}" y="0" width="${barW}" height="${licenseBarHeight}" fill="${color}" mask="url(#license-mask)" />`;
+            lx += barW;
+        }
+
+        // License legend
+        const lColWidth = (width - 2 * padding) / 3;
+        const licLegendY = licenseBarHeight + 20;
+        sortedLicenses.forEach(([license, count], index) => {
+            const col = index % 3;
+            const row = Math.floor(index / 3);
+            const x = col * lColWidth;
+            const y = licLegendY + row * licenseLegendRowHeight;
+            const color = licenseColors[license] || '#6d6d6d';
+            const pct = ((count / totalLicensedRepos) * 100).toFixed(0);
+
+            svgContent += `
+          <g transform="translate(${x}, ${y})">
+            <circle cx="5" cy="5" r="4" fill="${color}" />
+            <text x="15" y="9" class="lang-name">${escapeXml(license)}</text>
+            <text x="${lColWidth - 20}" y="9" text-anchor="end" class="license-count">${count} repo${count > 1 ? 's' : ''} (${pct}%)</text>
+          </g>`;
+        });
+
+        svgContent += `</g>`;
+    }
+
+    // Streak section
+    svgContent += `<g transform="translate(${padding}, ${streakY})">`;
+    svgContent += `<text x="0" y="-10" class="section-title">Contribution Streaks</text>`;
+
+    const sBoxW = (width - 2 * padding - 20) / 3;
+    const streakData = [
+        { label: 'Current Streak', value: `${stats.currentStreak}`, sub: stats.currentStreak === 1 ? 'day' : 'days' },
+        { label: 'Longest Streak', value: `${stats.longestStreak}`, sub: stats.longestStreak === 1 ? 'day' : 'days' },
+        { label: 'Last Year', value: `${stats.totalContributionsLastYear}`, sub: 'contributions' },
+    ];
+
+    streakData.forEach((s, i) => {
+        const sx = i * (sBoxW + 10);
+        svgContent += `
+      <g transform="translate(${sx}, 0)">
+        <rect width="${sBoxW}" height="${streakBoxHeight}" rx="4" class="streak-box" />
+        <text x="${sBoxW / 2}" y="32" text-anchor="middle" class="streak-value">${escapeXml(s.value)}</text>
+        <text x="${sBoxW / 2}" y="52" text-anchor="middle" class="streak-label">${escapeXml(s.label)}</text>
+        <text x="${sBoxW / 2}" y="68" text-anchor="middle" class="streak-sub">${escapeXml(s.sub)}</text>
+      </g>`;
+    });
+    svgContent += `</g>`;
+
+    // Code volume section
+    if (hasCodeVolume) {
+        svgContent += `<g transform="translate(${padding}, ${codeVolumeY})">`;
+        svgContent += `<text x="0" y="-10" class="section-title">Code Volume (Top Repos)</text>`;
+
+        const totalLines = stats.totalAdditions + stats.totalDeletions;
+        const addPct = totalLines > 0 ? (stats.totalAdditions / totalLines) * 100 : 50;
+        const barW = width - 2 * padding;
+        const cvBarH = 14;
+
+        // Additions and deletions text
+        svgContent += `<text x="0" y="14" class="code-add">++${formatNum(stats.totalAdditions)}</text>`;
+        svgContent += `<text x="${barW}" y="14" text-anchor="end" class="code-del">--${formatNum(stats.totalDeletions)}</text>`;
+        svgContent += `<text x="${barW / 2}" y="14" text-anchor="middle" class="code-label">${formatNum(totalLines)} total lines changed</text>`;
+
+        // Stacked bar
+        svgContent += `<mask id="code-mask"><rect x="0" y="22" width="${barW}" height="${cvBarH}" rx="2" fill="white" /></mask>`;
+        svgContent += `<rect x="0" y="22" width="${barW}" height="${cvBarH}" rx="2" fill="#29263d" />`;
+        const addBarW = (addPct / 100) * barW;
+        svgContent += `<rect x="0" y="22" width="${addBarW}" height="${cvBarH}" class="code-bar-add" mask="url(#code-mask)" />`;
+        svgContent += `<rect x="${addBarW}" y="22" width="${barW - addBarW}" height="${cvBarH}" class="code-bar-del" mask="url(#code-mask)" />`;
+
+        // Percentage labels
+        svgContent += `<text x="0" y="52" class="code-label">${addPct.toFixed(1)}% additions</text>`;
+        svgContent += `<text x="${barW}" y="52" text-anchor="end" class="code-label">${(100 - addPct).toFixed(1)}% deletions</text>`;
+
+        svgContent += `</g>`;
+    }
+
+    // Traffic section (last 14 days)
+    if (hasTraffic) {
+        svgContent += `<g transform="translate(${padding}, ${trafficY})">`;
+        svgContent += `<text x="0" y="-10" class="section-title">Traffic (Last 14 Days)</text>`;
+
+        // Traffic stat boxes - 4 columns
+        const tBoxW = (width - 2 * padding - 30) / 4;
+        const tBoxH = trafficStatHeight;
+
+        const trafficBoxes = [
+            { label: 'Total Views', value: stats.totalViews.toLocaleString(), sub: `${stats.uniqueViews.toLocaleString()} unique` },
+            { label: 'Total Clones', value: stats.totalClones.toLocaleString(), sub: `${stats.uniqueClones.toLocaleString()} unique` },
+            { label: 'Unique Visitors', value: stats.uniqueViews.toLocaleString(), sub: 'across repos' },
+            { label: 'Unique Cloners', value: stats.uniqueClones.toLocaleString(), sub: 'across repos' },
+        ];
+
+        trafficBoxes.forEach((box, i) => {
+            const bx = i * (tBoxW + 10);
+            svgContent += `
+          <g transform="translate(${bx}, 0)">
+            <rect width="${tBoxW}" height="${tBoxH}" rx="4" class="traffic-box" />
+            <text x="${tBoxW / 2}" y="28" text-anchor="middle" class="traffic-value">${escapeXml(box.value)}</text>
+            <text x="${tBoxW / 2}" y="48" text-anchor="middle" class="traffic-label">${escapeXml(box.label)}</text>
+            <text x="${tBoxW / 2}" y="62" text-anchor="middle" class="traffic-sub">${escapeXml(box.sub)}</text>
+          </g>`;
+        });
+
+        // Referrers
+        if (stats.referrers.length > 0) {
+            const refY = tBoxH + 30;
+            svgContent += `<text x="0" y="${refY - 10}" class="section-title">Top Referrers</text>`;
+
+            const maxRefCount = stats.referrers[0]?.count || 1;
+            const barMaxW = width - 2 * padding - 200;
+
+            stats.referrers.forEach((ref, i) => {
+                const ry = refY + i * referrerRowHeight;
+                const barW = Math.max(2, (ref.count / maxRefCount) * barMaxW);
+
+                svgContent += `
+              <g transform="translate(0, ${ry})">
+                <text x="0" y="14" class="referrer-name">${escapeXml(ref.name)}</text>
+                <rect x="160" y="3" width="${barMaxW}" height="14" rx="2" class="referrer-bar-bg" />
+                <rect x="160" y="3" width="${barW}" height="14" rx="2" class="referrer-bar" />
+                <text x="${160 + barMaxW + 10}" y="14" class="referrer-count">${ref.count.toLocaleString()} (${ref.uniques.toLocaleString()} unique)</text>
+              </g>`;
+            });
+        }
+
+        svgContent += `</g>`;
+    }
 
     svgContent += `</svg>`;
 

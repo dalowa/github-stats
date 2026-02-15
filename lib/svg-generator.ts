@@ -22,6 +22,21 @@ export function generateSvg(stats: GitHubStats): string {
   const width = 800; // Wider dashboard
   const padding = 30;
 
+  // Theme Configuration - Background Gradient
+  const bgGradientStart = "#0F0F0F"; // Top-center (lightest point of the spotlight)
+  const bgGradientMid = "#0F0F0F";   // Mid-transition
+  const bgGradientEnd = "#0F0F0F";   // Edges/Bottom (darkest)
+
+  // Theme Configuration - Text Colors
+  const textPrimary = "#e0e0e0";    // Headings, big stats, values
+  const textSecondary = "#cccccc";  // Subheadings, language names, user handle, icons
+  const textTertiary = "#bbbbbb";   // Bio, labels
+  const textQuaternary = "#999999"; // Info text, percentages, counts, less important details
+
+  // Theme Configuration - Structural Colors
+  const borderColor = "#404040";
+  const boxBgColor = "#2d2d2d";
+
   // Layout
   const headerHeight = 180; // Increased for dossier style
   const statsGridY = headerHeight + padding + 10;
@@ -108,56 +123,56 @@ export function generateSvg(stats: GitHubStats): string {
 
   // Spider-Man Noir Theme CSS
   const css = `
-    .header-name { font: 700 48px Impact, sans-serif; fill: #e0e0e0; text-transform: uppercase; letter-spacing: 2px; filter: url(#text-shadow); }
-    .header-user { font: 400 18px 'Courier New', monospace; fill: #cccccc; letter-spacing: 1px; }
-    .bio { font: 400 14px 'Courier New', monospace; fill: #bbbbbb; }
-    .info-text { font: 400 12px 'Courier New', monospace; fill: #999999; }
-    .info-icon { fill: #999999; }
+    .header-name { font: 700 48px Impact, sans-serif; fill: ${textPrimary}; text-transform: uppercase; letter-spacing: 2px; filter: url(#text-shadow); }
+    .header-user { font: 400 18px 'Courier New', monospace; fill: ${textSecondary}; letter-spacing: 1px; }
+    .bio { font: 400 14px 'Courier New', monospace; fill: ${textTertiary}; }
+    .info-text { font: 400 12px 'Courier New', monospace; fill: ${textQuaternary}; }
+    .info-icon { fill: ${textQuaternary}; }
     
-    .social-box { fill: none; stroke: #404040; stroke-width: 1; }
-    .social-value { font: 700 24px Impact, sans-serif; fill: #e0e0e0; text-anchor: middle; }
-    .social-label { font: 400 10px 'Courier New', monospace; fill: #999999; text-transform: uppercase; text-anchor: middle; letter-spacing: 1px; }
+    .social-box { fill: none; stroke: ${borderColor}; stroke-width: 1; }
+    .social-value { font: 700 24px Impact, sans-serif; fill: ${textPrimary}; text-anchor: middle; }
+    .social-label { font: 400 10px 'Courier New', monospace; fill: ${textQuaternary}; text-transform: uppercase; text-anchor: middle; letter-spacing: 1px; }
     
-    .stat-value { font: 700 24px Impact, sans-serif; fill: #e0e0e0; letter-spacing: 1px; filter: url(#text-shadow); }
-    .stat-label { font: 700 10px 'Courier New', monospace; fill: #bbbbbb; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font: 700 24px Impact, sans-serif; fill: ${textPrimary}; letter-spacing: 1px; filter: url(#text-shadow); }
+    .stat-label { font: 700 10px 'Courier New', monospace; fill: ${textTertiary}; text-transform: uppercase; letter-spacing: 1px; }
     
-    .lang-name { font: 700 11px 'Courier New', monospace; fill: #cccccc; }
-    .lang-pct { font: 400 11px 'Courier New', monospace; fill: #999999; }
+    .lang-name { font: 700 11px 'Courier New', monospace; fill: ${textSecondary}; }
+    .lang-pct { font: 400 11px 'Courier New', monospace; fill: ${textQuaternary}; }
     
     .bg-rect { fill: url(#spotlight); }
     .halftone-overlay { fill: url(#halftone); opacity: 0.05; pointer-events: none; }
     
-    .stat-box { fill: #2d2d2d; stroke: #404040; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
-    .icon { fill: #cccccc; }
-    .section-title { font: 700 18px Impact, sans-serif; fill: #e0e0e0; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; filter: url(#text-shadow); }
+    .stat-box { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+    .icon { fill: ${textSecondary}; }
+    .section-title { font: 700 18px Impact, sans-serif; fill: ${textPrimary}; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; filter: url(#text-shadow); }
     
-    .topic-tag { fill: #2d2d2d; stroke: #404040; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
-    .topic-text { font: 700 11px 'Courier New', monospace; fill: #cccccc; }
+    .topic-tag { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+    .topic-text { font: 700 11px 'Courier New', monospace; fill: ${textSecondary}; }
     
-    .license-tag { fill: #2d2d2d; stroke: #404040; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
-    .license-text { font: 700 11px 'Courier New', monospace; fill: #cccccc; }
-    .license-count { font: 400 10px 'Courier New', monospace; fill: #999999; }
+    .license-tag { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+    .license-text { font: 700 11px 'Courier New', monospace; fill: ${textSecondary}; }
+    .license-count { font: 400 10px 'Courier New', monospace; fill: ${textQuaternary}; }
     
-    .traffic-box { fill: #2d2d2d; stroke: #404040; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
-    .traffic-value { font: 700 20px Impact, sans-serif; fill: #e0e0e0; }
-    .traffic-label { font: 700 10px 'Courier New', monospace; fill: #bbbbbb; text-transform: uppercase; letter-spacing: 1px; }
-    .traffic-sub { font: 400 10px 'Courier New', monospace; fill: #999999; }
+    .traffic-box { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+    .traffic-value { font: 700 20px Impact, sans-serif; fill: ${textPrimary}; }
+    .traffic-label { font: 700 10px 'Courier New', monospace; fill: ${textTertiary}; text-transform: uppercase; letter-spacing: 1px; }
+    .traffic-sub { font: 400 10px 'Courier New', monospace; fill: ${textQuaternary}; }
     
-    .referrer-name { font: 700 12px 'Courier New', monospace; fill: #cccccc; }
-    .referrer-count { font: 400 12px 'Courier New', monospace; fill: #999999; }
+    .referrer-name { font: 700 12px 'Courier New', monospace; fill: ${textSecondary}; }
+    .referrer-count { font: 400 12px 'Courier New', monospace; fill: ${textQuaternary}; }
     .referrer-bar-bg { fill: #1a1a1a; shape-rendering: geometricPrecision; }
     .referrer-bar { fill: url(#metal-gradient); shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
     
-    .streak-value { font: 700 32px Impact, sans-serif; fill: #e0e0e0; filter: url(#text-shadow); }
-    .streak-label { font: 700 12px 'Courier New', monospace; fill: #bbbbbb; text-transform: uppercase; }
-    .streak-sub { font: 400 11px 'Courier New', monospace; fill: #999999; }
-    .streak-box { fill: #2d2d2d; stroke: #404040; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+    .streak-value { font: 700 32px Impact, sans-serif; fill: ${textPrimary}; filter: url(#text-shadow); }
+    .streak-label { font: 700 12px 'Courier New', monospace; fill: ${textTertiary}; text-transform: uppercase; }
+    .streak-sub { font: 400 11px 'Courier New', monospace; fill: ${textQuaternary}; }
+    .streak-box { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
     
-    .code-add { font: 700 16px 'Courier New', monospace; fill: #cccccc; }
-    .code-del { font: 700 16px 'Courier New', monospace; fill: #999999; }
-    .code-label { font: 400 11px 'Courier New', monospace; fill: #999999; }
+    .code-add { font: 700 16px 'Courier New', monospace; fill: ${textSecondary}; }
+    .code-del { font: 700 16px 'Courier New', monospace; fill: ${textQuaternary}; }
+    .code-label { font: 400 11px 'Courier New', monospace; fill: ${textQuaternary}; }
     .code-bar-add { fill: url(#metal-gradient); shape-rendering: geometricPrecision; }
-    .code-bar-del { fill: #404040; shape-rendering: geometricPrecision; }
+    .code-bar-del { fill: ${borderColor}; shape-rendering: geometricPrecision; }
   `;
 
   // Icons
@@ -207,9 +222,9 @@ export function generateSvg(stats: GitHubStats): string {
   <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="spotlight" cx="50%" cy="0%" r="150%" fx="50%" fy="0%">
-        <stop offset="0%" style="stop-color:#333333;stop-opacity:1" />
-        <stop offset="60%" style="stop-color:#1a1a1a;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+        <stop offset="0%" style="stop-color:${bgGradientStart};stop-opacity:1" />
+        <stop offset="60%" style="stop-color:${bgGradientMid};stop-opacity:1" />
+        <stop offset="100%" style="stop-color:${bgGradientEnd};stop-opacity:1" />
       </radialGradient>
       
       <linearGradient id="metal-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -251,7 +266,7 @@ export function generateSvg(stats: GitHubStats): string {
     <!-- Background and Border -->
     <rect x="0" y="0" width="${width}" height="${height}" class="bg-rect" />
     <rect x="0" y="0" width="${width}" height="${height}" class="halftone-overlay" />
-    <rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="#404040" stroke-width="2" rx="0" />
+    <rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="${borderColor}" stroke-width="2" rx="0" />
 
     <!-- Header Section -->
     <g transform="translate(${padding}, ${padding + 10})">
@@ -263,7 +278,7 @@ export function generateSvg(stats: GitHubStats): string {
             <!-- Bio with max width -->
             <switch>
                 <foreignObject x="2" y="70" width="${width * 0.6}" height="60">
-                    <p xmlns="http://www.w3.org/1999/xhtml" style="margin:0; color:#bbbbbb; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
+                    <p xmlns="http://www.w3.org/1999/xhtml" style="margin:0; color:${textTertiary}; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
                         ${bio}
                     </p>
                 </foreignObject>
@@ -285,7 +300,7 @@ export function generateSvg(stats: GitHubStats): string {
 
         <!-- Meta Info Footer (Bottom of Header) -->
         <g transform="translate(2, ${headerHeight - padding - 20})">
-            <line x1="0" y1="-15" x2="${width - (padding * 2)}" y2="-15" stroke="#404040" stroke-width="1" stroke-dasharray="4,4" />
+            <line x1="0" y1="-15" x2="${width - (padding * 2)}" y2="-15" stroke="${borderColor}" stroke-width="1" stroke-dasharray="4,4" />
             
             <g transform="translate(0, 0)">
                 <g transform="translate(0, -4) scale(0.8)">
@@ -332,7 +347,7 @@ export function generateSvg(stats: GitHubStats): string {
         <g transform="translate(0, 10)">
             <defs>
                  <pattern id="dot-pattern" width="4" height="4" patternUnits="userSpaceOnUse">
-                    <circle cx="1" cy="1" r="0.5" fill="#404040" />
+                    <circle cx="1" cy="1" r="0.5" fill="${borderColor}" />
                  </pattern>
             </defs>
             ${languages.slice(0, 9).map((lang, index) => {
@@ -374,7 +389,7 @@ export function generateSvg(stats: GitHubStats): string {
     svgContent += `
         <switch>
             <foreignObject x="0" y="0" width="${(width / 2) - padding * 2}" height="100">
-                <p xmlns="http://www.w3.org/1999/xhtml" style="margin:0; color:#cccccc; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
+                <p xmlns="http://www.w3.org/1999/xhtml" style="margin:0; color:${textSecondary}; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
                     ${topicText}
                 </p>
             </foreignObject>

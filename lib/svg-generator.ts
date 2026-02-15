@@ -271,20 +271,15 @@ export function generateSvg(stats: GitHubStats): string {
             </switch>
         </g>
         
-        <!-- Social Stamps (Right) -->
-        <g transform="translate(${width - (padding * 2) - 180}, 10)">
-            <!-- Followers Stamp -->
-            <g transform="translate(0, 0)">
-                <rect x="0" y="0" width="80" height="60" class="social-box" />
-                <text x="40" y="25" class="social-value" dominant-baseline="central">${escapeXml(stats.followers)}</text>
-                <text x="40" y="50" class="social-label">FOLLOWERS</text>
-            </g>
-            
-            <!-- Following Stamp -->
-            <g transform="translate(90, 0)">
-                <rect x="0" y="0" width="80" height="60" class="social-box" />
-                <text x="40" y="25" class="social-value" dominant-baseline="central">${escapeXml(stats.following)}</text>
-                <text x="40" y="50" class="social-label">FOLLOWING</text>
+        <!-- Logo (Right) -->
+        <g transform="translate(${width - (padding * 2) - 125}, -25)">
+            <g transform="scale(0.4)">
+                <svg width="330" height="339" viewBox="0 0 230 239" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="230" height="230" fill="none"/>
+                    <path d="M93.3494 84.2667C102.972 67.6 127.028 67.6 136.651 84.2667L176.344 153.017C185.966 169.683 173.938 190.517 154.693 190.517H75.3072C56.0622 190.517 44.0341 169.683 53.6566 153.017L93.3494 84.2667Z" fill="url(#metal-gradient)"/>
+                    <rect x="9.19995" y="135.626" width="115" height="38.3333" rx="19.1667" transform="rotate(-60 9.19995 135.626)" fill="url(#metal-gradient)"/>
+                    <rect x="162.764" y="36.0333" width="115" height="38.3333" rx="19.1667" transform="rotate(60 162.764 36.0333)" fill="url(#metal-gradient)"/>
+                </svg>
             </g>
         </g>
 
@@ -527,6 +522,8 @@ export function generateSvg(stats: GitHubStats): string {
     }
     svgContent += `</g>`;
   }
+
+
 
   svgContent += `</svg>`;
 

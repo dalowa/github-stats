@@ -23,9 +23,9 @@ export function generateSvg(stats: GitHubStats): string {
   const padding = 30;
 
   // Theme Configuration - Background Gradient
-  const bgGradientStart = "#0F0F0F"; // Top-center (lightest point of the spotlight)
-  const bgGradientMid = "#0F0F0F";   // Mid-transition
-  const bgGradientEnd = "#0F0F0F";   // Edges/Bottom (darkest)
+  const bgGradientStart = "#0D1117"; // Top-center (lightest point of the spotlight)
+  const bgGradientMid = "#0D1117";   // Mid-transition
+  const bgGradientEnd = "#0D1117";   // Edges/Bottom (darkest)
 
   // Theme Configuration - Text Colors
   const textPrimary = "#e0e0e0";    // Headings, big stats, values
@@ -34,8 +34,8 @@ export function generateSvg(stats: GitHubStats): string {
   const textQuaternary = "#999999"; // Info text, percentages, counts, less important details
 
   // Theme Configuration - Structural Colors
-  const borderColor = "#404040";
-  const boxBgColor = "#2d2d2d";
+  const borderColor = "#C7BDB940";
+  const boxBgColor = "#000";
 
   // Layout
   const headerHeight = 180; // Increased for dossier style
@@ -144,7 +144,7 @@ export function generateSvg(stats: GitHubStats): string {
     
     .stat-box { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
     .icon { fill: ${textSecondary}; }
-    .section-title { font: 700 18px Impact, sans-serif; fill: ${textPrimary}; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; filter: url(#text-shadow); }
+    .section-title { font: 700 18px Impact, sans-serif; fill: ${textPrimary}; text-transform: uppercase; letter-spacing: 4px; filter: url(#text-shadow); }
     
     .topic-tag { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
     .topic-text { font: 700 11px 'Courier New', monospace; fill: ${textSecondary}; }
@@ -158,6 +158,8 @@ export function generateSvg(stats: GitHubStats): string {
     .traffic-label { font: 700 10px 'Courier New', monospace; fill: ${textTertiary}; text-transform: uppercase; letter-spacing: 1px; }
     .traffic-sub { font: 400 10px 'Courier New', monospace; fill: ${textQuaternary}; }
     
+    .traffic-stat-box { fill: ${boxBgColor}; stroke: ${borderColor}; stroke-width: 1; shape-rendering: geometricPrecision; filter: url(#soft-shadow); }
+
     .referrer-name { font: 700 12px 'Courier New', monospace; fill: ${textSecondary}; }
     .referrer-count { font: 400 12px 'Courier New', monospace; fill: ${textQuaternary}; }
     .referrer-bar-bg { fill: #1a1a1a; shape-rendering: geometricPrecision; }
@@ -266,7 +268,7 @@ export function generateSvg(stats: GitHubStats): string {
     <!-- Background and Border -->
     <rect x="0" y="0" width="${width}" height="${height}" class="bg-rect" />
     <rect x="0" y="0" width="${width}" height="${height}" class="halftone-overlay" />
-    <rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="${borderColor}" stroke-width="2" rx="0" />
+    <rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="transparent" stroke-width="2" rx="0" />
 
     <!-- Header Section -->
     <g transform="translate(${padding}, ${padding + 10})">
@@ -424,7 +426,7 @@ export function generateSvg(stats: GitHubStats): string {
   // --- SECTION 4: ACTIVITY LOG (Streaks & Code) ---
   const activityY = intelY + 140;
   svgContent += `<g transform="translate(${padding}, ${activityY})">`;
-  svgContent += `<text x="0" y="-10" class="section-title">Activity Log</text>`;
+  svgContent += `<text x="0" y="-20" class="section-title">Activity Log</text>`;
 
   // Streaks (Horizontal Stamps)
   const streakBoxW = (width - padding * 2) / 3 - 10;
@@ -438,7 +440,7 @@ export function generateSvg(stats: GitHubStats): string {
     const sx = i * (streakBoxW + 15);
     svgContent += `
             <g transform="translate(${sx}, 0)">
-                <rect width="${streakBoxW}" height="70" class="social-box" />
+                <rect width="${streakBoxW}" height="70" class="streak-box" />
                 <text x="${streakBoxW / 2}" y="25" class="social-value" dominant-baseline="central">${escapeXml(s.value)}</text>
                 <text x="${streakBoxW / 2}" y="55" class="social-label">${escapeXml(s.label.toUpperCase())}</text>
             </g>`;
@@ -485,7 +487,7 @@ export function generateSvg(stats: GitHubStats): string {
   if (hasTraffic) {
     const trafficTopY = activityY + 200;
     svgContent += `<g transform="translate(${padding}, ${trafficTopY})">`;
-    svgContent += `<text x="0" y="-10" class="section-title">Traffic Analysis (14 Days)</text>`;
+    svgContent += `<text x="0" y="-20" class="section-title">Traffic Analysis (14 Days)</text>`;
 
     // Left Col: 2x2 Stats Grid
     const gridW = (width / 2) - padding * 2;
@@ -507,7 +509,7 @@ export function generateSvg(stats: GitHubStats): string {
 
       svgContent += `
             <g transform="translate(${tx}, ${ty})">
-                 <rect width="${smallBoxW}" height="${smallBoxH}" class="social-box" />
+                 <rect width="${smallBoxW}" height="${smallBoxH}" class="traffic-stat-box" />
                  <text x="${smallBoxW / 2}" y="25" class="stat-value" style="font-size: 20px;" text-anchor="middle" dominant-baseline="central">${t.v}</text>
                  <text x="${smallBoxW / 2}" y="42" class="social-label" style="font-size: 9px;">${t.l}</text>
             </g>`;
@@ -516,7 +518,7 @@ export function generateSvg(stats: GitHubStats): string {
     // Right Col: Referrers List
     if (stats.referrers.length > 0) {
       const refX = (width / 2) + 10;
-      svgContent += `<g transform="translate(${refX}, 50)">`;
+      svgContent += `<g transform="translate(${refX}, 0)">`;
       // svgContent += `<text x="0" y="-5" class="social-label" text-anchor="start">TOP SOURCES</text>`;
 
       stats.referrers.slice(0, 5).forEach((ref, i) => {

@@ -35,7 +35,7 @@ export function generateSvg(stats: GitHubStats): string {
 
   // Theme Configuration - Structural Colors
   const borderColor = "#C7BDB940";
-  const boxBgColor = "#000";
+  const boxBgColor = "#0d0f13ff";
 
   // Layout
   const headerHeight = 180; // Increased for dossier style
